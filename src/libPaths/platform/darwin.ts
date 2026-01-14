@@ -12,4 +12,4 @@ export const darwinLibPaths = {
   gobject: findLib("gobject-2.0.dylib", SEARCH_DIRS),
   gio: findLib("libgio-2.0.dylib", SEARCH_DIRS),
   cairo: findLib("libcairo.2.dylib", SEARCH_DIRS),
-}
+};
