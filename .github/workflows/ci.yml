@@ -44,5 +44,5 @@ jobs:
 
       - name: Run tests (Bun)
         run: |
-          deno task test:bun
+          xvfb-run -a deno task test:bun
         shell: bash
