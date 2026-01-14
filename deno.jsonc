@@ -1,6 +1,19 @@
 {
+  "name": "@sigmasd/gtk",
+  "version": "0.12.0",
+  "exports": {
+    ".": "./src/gtk-ffi.ts",
+    "./eventloop": "./src/eventloop.ts"
+  },
   "imports": {
     "@std/collections": "jsr:@std/collections@^1.1.3",
     "@std/path": "jsr:@std/path@^1.1.4"
+  },
+  "license": "MIT",
+  "publish": {
+    "include": [
+      "src",
+      "README.md"
+    ]
   }
 }

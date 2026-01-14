@@ -82,6 +82,25 @@ deno run --allow-ffi your-app.ts # or bun your-app.ts
 deno run --allow-ffi examples/simple.ts # or bun examples/simple.ts
 ```
 
+## NixOS Notes
+
+Nix puts GTK libraries outside standard linker locations. The loader now tries
+common Nix paths (`/run/current-system/sw/lib` and `NIX_LD_LIBRARY_PATH`) and
+lets you point at exact locations when needed:
+
+- `GTK_FFI_LIB_PATHS`: Colon-separated dirs to search (e.g.
+  `/nix/store/...-gtk4/lib:/nix/store/...-libadwaita/lib`).
+- `GTK_FFI_LIB_DIR`: Single directory containing all libs.
+- `GTK_FFI_<NAME>_PATH`: Explicit file path for one library (`GTK`, `ADWAITA`,
+  `GLIB`, `GOBJECT`, `GIO`, `CAIRO`).
+
+Example (Deno):
+
+```bash
+GTK_FFI_LIB_PATHS="/nix/store/...-gtk4/lib:/nix/store/...-libadwaita/lib" \
+  deno run --allow-ffi --allow-env=GTK_FFI_LIB_PATHS examples/simple.ts
+```
+
 ## Examples
 
 The repository's `examples/` directory contains sample applications:

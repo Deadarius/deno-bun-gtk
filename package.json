@@ -5,6 +5,10 @@
     ".": "./src/gtk-ffi.ts"
   },
   "scripts": {
+    "run:example:simple": "deno run --allow-ffi examples/simple.ts",
+    "run:example:async-demo": "deno run --allow-ffi --allow-net examples/async-demo.ts",
+    "run:example:checkbutton-demo": "deno run --allow-ffi examples/checkbutton-demo.ts",
+    "run:example:widgets-demo": "deno run --allow-ffi examples/widgets-demo.ts",
     "test": "deno install && deno fmt --check && deno lint && deno check && deno test --allow-ffi"
   },
   "devDependencies": {
