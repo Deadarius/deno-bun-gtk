@@ -2,6 +2,7 @@
 // This file contains all dlopen calls and should not be part of the public API
 import "./bun-deno-compat.ts";
 import { LIB_PATHS } from "./libPaths/mod.ts";
+console.log("Using library paths:", LIB_PATHS);
 
 // Load GLib - Core utilities and main loop
 export const glib = Deno.dlopen(LIB_PATHS.glib, {

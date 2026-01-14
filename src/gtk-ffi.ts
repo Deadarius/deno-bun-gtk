@@ -155,12 +155,13 @@ export class GObject {
 
   connect(signal: string, callback: (...args: unknown[]) => unknown): number {
     const signalCStr = cstr(signal);
+    const cbDef = {
+      parameters: ["pointer", "pointer", "pointer", "pointer", "pointer"],
+      result: "void",
+    } as const;
     const cb = new Deno.UnsafeCallback(
-      {
-        parameters: ["pointer", "pointer", "pointer", "pointer", "pointer"],
-        result: "void",
-      } as Deno.UnsafeCallbackDefinition,
-      (_objectPtr: Deno.PointerValue, ...args: Deno.PointerValue[]) => {
+      cbDef,
+      (_objectPtr, ...args) => {
         // Pass the raw pointer arguments to the callback
         // Higher-level wrappers will convert these as needed
         callback(...args);
@@ -757,8 +758,13 @@ export class CairoContext {
 }
 
 // GTK DrawingArea
+type DrawCallbackDef = {
+  readonly parameters: readonly ["pointer", "pointer", "i32", "i32", "pointer"];
+  readonly result: "void";
+};
+
 export class DrawingArea extends Widget {
-  private drawCallback?: Deno.UnsafeCallback;
+  private drawCallback?: Deno.UnsafeCallback<DrawCallbackDef>;
 
   constructor() {
     const ptr = gtk.symbols.gtk_drawing_area_new();
@@ -773,26 +779,21 @@ export class DrawingArea extends Widget {
       height: number,
     ) => void,
   ): void {
+    const cbDef: DrawCallbackDef = {
+      parameters: ["pointer", "pointer", "i32", "i32", "pointer"],
+      result: "void",
+    } as const;
     this.drawCallback = new Deno.UnsafeCallback(
-      {
-        parameters: ["pointer", "pointer", "i32", "i32", "pointer"],
-        result: "void",
-      } as Deno.UnsafeCallbackDefinition,
-      (
-        _areaPtr: Deno.PointerValue,
-        crPtr: Deno.PointerValue,
-        width: number,
-        height: number,
-        _userData: Deno.PointerValue,
-      ) => {
-        const cr = new CairoContext(crPtr);
+      cbDef,
+      (_areaPtr, crPtr, width, height, _userData) => {
+        const cr = new CairoContext(crPtr as Deno.PointerValue);
         callback(this, cr, width, height);
       },
     );
 
     gtk.symbols.gtk_drawing_area_set_draw_func(
       this.ptr,
-      this.drawCallback.pointer as Deno.PointerValue,
+      this.drawCallback!.pointer as Deno.PointerValue,
       null,
       null,
     );
@@ -865,9 +866,9 @@ export class ListBox extends Widget {
 
   // High-level signal connection for row-activated
   onRowActivated(callback: (row: ListBoxRow, index: number) => void): number {
-    return this.connect("row-activated", (rowPtr: Deno.PointerValue) => {
+    return this.connect("row-activated", (rowPtr) => {
       if (rowPtr) {
-        const row = new ListBoxRow(rowPtr);
+        const row = new ListBoxRow(rowPtr as Deno.PointerValue);
         const index = row.getIndex();
         callback(row, index);
       }

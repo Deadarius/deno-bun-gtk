@@ -7,13 +7,32 @@
   },
   "imports": {
     "@std/collections": "jsr:@std/collections@^1.1.3",
-    "@std/path": "jsr:@std/path@^1.1.4"
+    "@std/path": "jsr:@std/path@^1.1.4",
+    "@types/bun": "npm:@types/bun@^1.3.6"
+  },
+  "compilerOptions": {
+    "types": [
+      "npm:@types/bun/index.d.ts"
+    ]
+  },
+  "tasks": {
+    "run:example:simple": "deno run --allow-ffi examples/simple.ts",
+    "run:example:async-demo": "deno run --allow-ffi --allow-net examples/async-demo.ts",
+    "run:example:checkbutton-demo": "deno run --allow-ffi examples/checkbutton-demo.ts",
+    "run:example:widgets-demo": "deno run --allow-ffi examples/widgets-demo.ts",
+    "test": "deno test --allow-ffi",
+    "test:bun": "deno bundle -o temp-test/widget_test.js test/widget_test.ts && bun temp-test/widget_test.js --allow-ffi"
   },
   "license": "MIT",
   "publish": {
     "include": [
       "src",
       "README.md"
+    ]
+  },
+  "lint": {
+    "exclude": [
+      "temp-test"
     ]
   }
 }

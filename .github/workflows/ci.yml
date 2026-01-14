@@ -82,8 +82,8 @@ jobs:
       - name: Run tests (Bun)
         run: |
           if [ "$RUNNER_OS" == "Linux" ]; then
-            xvfb-run -a bun test
+            xvfb-run -a deno task test:bun
           else
-            bun test
+            deno task test:bun
           fi
         shell: bash
