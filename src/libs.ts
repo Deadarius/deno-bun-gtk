@@ -1,19 +1,11 @@
 // Internal module for FFI library loading
 // This file contains all dlopen calls and should not be part of the public API
-
+import { join } from "@std/path";
+import { distinct } from "@std/collections";
 import "./bun-deno-compat.ts";
 
 // Detect OS and set library paths
 const OS = Deno.build.os;
-
-function getLibPath(libName: string, soversion: string): string {
-  if (OS === "linux") {
-    // Try to load library - system linker will handle version resolution
-    // It searches in standard locations: /usr/lib, /usr/local/lib, LD_LIBRARY_PATH
-    return `${libName}.so.${soversion}`;
-  }
-  return `${libName}.so.${soversion}`;
-}
 
 // Helper to try multiple library paths
 function tryOpenLib(paths: string[]): string {
@@ -30,6 +22,29 @@ function tryOpenLib(paths: string[]): string {
   }
   // Return the first path as fallback
   return paths[0];
+}
+
+const SEARCH_DIRS = [
+  "/usr/lib",
+  "/usr/local/lib",
+  "/run/current-system/sw/lib", // NixOS
+];
+
+function resolveLinuxLib(
+  libName: string,
+  soversion: string,
+): string {
+  const libFile = `${libName}.so.${soversion}`;
+  const candidates: string[] = [];
+
+  for (const dir of SEARCH_DIRS) {
+    candidates.push(join(dir, libFile));
+  }
+
+  candidates.push(libFile);
+  const uniqueCandidates = distinct(candidates);
+
+  return tryOpenLib(uniqueCandidates);
 }
 
 const LIB_PATHS = OS === "darwin"
@@ -94,13 +109,22 @@ const LIB_PATHS = OS === "darwin"
       "libcairo-2.dll",
     ]),
   }
+  : OS === "linux"
+  ? {
+    gtk: resolveLinuxLib("libgtk-4", "1"),
+    adwaita: resolveLinuxLib("libadwaita-1", "0"),
+    glib: resolveLinuxLib("libglib-2.0", "0"),
+    gobject: resolveLinuxLib("libgobject-2.0", "0"),
+    gio: resolveLinuxLib("libgio-2.0", "0"),
+    cairo: resolveLinuxLib("libcairo", "2"),
+  }
   : {
-    gtk: getLibPath("libgtk-4", "1"),
-    adwaita: getLibPath("libadwaita-1", "0"),
-    glib: getLibPath("libglib-2.0", "0"),
-    gobject: getLibPath("libgobject-2.0", "0"),
-    gio: getLibPath("libgio-2.0", "0"),
-    cairo: getLibPath("libcairo", "2"),
+    gtk: "libgtk-4.so.1",
+    adwaita: "libadwaita-1.so.0",
+    glib: "libglib-2.0.so.0",
+    gobject: "libgobject-2.0.so.0",
+    gio: "libgio-2.0.so.0",
+    cairo: "libcairo.so.2",
   };
 
 // Load GLib - Core utilities and main loop
